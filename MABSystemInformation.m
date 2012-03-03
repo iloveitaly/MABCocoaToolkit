@@ -13,20 +13,18 @@
 
 @implementation MABSystemInformation
 
-//get everything!
-+ (NSDictionary *)miniSystemProfile
-{
++ (NSDictionary *)miniSystemProfile {
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 		[self machineType], @"MachineType",
 		[self humanMachineType], @"HumanMachineType",
 		[self powerPCTypeString], @"ProcessorType",
-		[NSNumber numberWithLong:[self processorClockSpeed]], @"ProcessorClockSpeed",
-		[NSNumber numberWithLong:[self processorClockSpeedInMHz]], @"ProcessorClockSpeedInMHz",
+		[NSNumber numberWithDouble:[self processorClockSpeedInGHz]], @"ProcessorClockSpeedInGHz",
 		[NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
-		[self computerName],@"ComputerName",
-		[self computerSerialNumber],@"ComputerSerialNumber",
-		[self operatingSystemString],@"OperatingSystem",
-		[self systemVersionString],@"SystemVersion",		
+		[self computerName], @"ComputerName",
+		[self computerSerialNumber], @"ComputerSerialNumber",
+		[self operatingSystemString], @"OperatingSystem",
+		[self systemVersionString], @"SystemVersion",
+		[NSNumber numberWithInt:[self ramAmount]], @"RamAmount",	
 		nil];
 }
 
@@ -57,114 +55,121 @@
 	}
 }
 
-//dictionary used to make the machine type human-readable
-static NSDictionary *translationDictionary=nil;
-+ (NSDictionary *)translationDictionary
-{
-	if (translationDictionary==nil)
-		translationDictionary=[[NSDictionary alloc] initWithObjectsAndKeys:
-							   @"PowerMac 8500/8600",@"AAPL,8500",
-							   @"PowerMac 9500/9600",@"AAPL,9500",
-							   @"PowerMac 7200",@"AAPL,7200",
-							   @"PowerMac 7200/7300",@"AAPL,7300",
-							   @"PowerMac 7500",@"AAPL,7500",
-							   @"Apple Network Server",@"AAPL,ShinerESB",
-							   @"Alchemy(Performa 6400 logic-board design)",@"AAPL,e407",
-							   @"Gazelle(5500)",@"AAPL,e411",
-							   @"PowerBook 3400",@"AAPL,3400/2400",
-							   @"PowerBook 3500",@"AAPL,3500",
-							   @"PowerMac G3 (Gossamer)",@"AAPL,Gossamer",
-							   @"PowerMac G3 (Silk)",@"AAPL,PowerMac G3",
-							   @"PowerBook G3 (Wallstreet)",@"AAPL,PowerBook1998",
-							   @"Yikes! Old machine - unknown model",@"AAPL",
-							   
-							   @"iMac (first generation)",@"iMac,1",
-							   @"iMac (first generation) - unknown model",@"iMac",
-							   
-							   @"PowerBook G3 (Lombard)",@"PowerBook1,1",
-							   @"iBook (clamshell)",@"PowerBook2,1",
-							   @"iBook FireWire (clamshell)",@"PowerBook2,2",
-							   @"PowerBook G3 (Pismo)",@"PowerBook3,1",
-							   @"PowerBook G4 (Titanium)",@"PowerBook3,2",
-							   @"PowerBook G4 (Titanium w/ Gigabit Ethernet)",
-							   @"PowerBook3,3",
-							   @"PowerBook G4 (Titanium w/ DVI)",@"PowerBook3,4",
-							   @"PowerBook G4 (Titanium 1GHZ)",@"PowerBook3,5",
-							   @"iBook (12in May 2001)",@"PowerBook4,1",
-							   @"iBook (May 2002)",@"PowerBook4,2",
-							   @"iBook 2 rev. 2 (w/ or w/o 14in LCD) (Nov 2002)",
-							   @"PowerBook4,3",
-							   @"iBook 2 (w/ or w/o 14in LDC)",@"PowerBook4,4",
-							   @"PowerBook G4 (Aluminum 17in)",@"PowerBook5,1",
-							   @"PowerBook G4 (Aluminum 15in)",@"PowerBook5,2",
-							   @"PowerBook G4 (Aluminum 17in rev. 2)",@"PowerBook5,3",
-							   @"PowerBook G4 (Aluminum 12in)",@"PowerBook6,1",
-							   @"PowerBook G4 (Aluminum 12in)",@"PowerBook6,2",
-							   @"iBook G4",@"PowerBook6,3",
-							   @"PowerBook or iBook - unknown model",@"PowerBook",
-							   
-							   @"Blue & White G3",@"PowerMac1,1",
-							   @"PowerMac G4 PCI Graphics",@"PowerMac1,2",
-							   @"iMac FireWire (CRT)",@"PowerMac2,1",
-							   @"iMac FireWire (CRT)",@"PowerMac2,2",
-							   @"PowerMac G4 AGP Graphics",@"PowerMac3,1",
-							   @"PowerMac G4 AGP Graphics",@"PowerMac3,2",
-							   @"PowerMac G4 AGP Graphics",@"PowerMac3,3",
-							   @"PowerMac G4 (QuickSilver)",@"PowerMac3,4",
-							   @"PowerMac G4 (QuickSilver)",@"PowerMac3,5",
-							   @"PowerMac G4 (MDD/Windtunnel)",@"PowerMac3,6",
-							   @"iMac (Flower Power)",@"PowerMac4,1",
-							   @"iMac (Flat Panel 15in)",@"PowerMac4,2",
-							   @"eMac",@"PowerMac4,4",
-							   @"iMac (Flat Panel 17in)",@"PowerMac4,5",
-							   @"PowerMac G4 Cube",@"PowerMac5,1",
-							   @"PowerMac G4 Cube",@"PowerMac5,2",
-							   @"iMac (Flat Panel 17in)",@"PowerMac6,1",
-							   @"PowerMac G5",@"PowerMac7,2",
-							   @"PowerMac G5",@"PowerMac7,3",
-							   @"PowerMac - unknown model",@"PowerMac",
-							   
-							   @"XServe",@"RackMac1,1",
-							   @"XServe rev. 2",@"RackMac1,2",
-							   @"XServe G5",@"RackMac3,1",
-							   @"XServe - unknown model",@"RackMac",
-							   
-							   @"Mac Mini",@"Macmini1,1",	// Seen on a 1st gen. Core Duo, but may also be on others...?
-							   @"Mac Mini - unknown model",@"Macmini",
-							   
+// dictionary used to make the machine type human-readable
+static NSDictionary *translationDictionary = nil;
++ (NSDictionary *)translationDictionary {
+	if(translationDictionary == nil)
+		translationDictionary = [[NSDictionary alloc] initWithObjectsAndKeys:
+	@"eMac (USB 2.0, 2005)", @"PowerMac6,4",
+	@"Xserve G4", @"RackMac1,1",
+	@"PowerBook G4 (Double layer SD, 17 inch)", @"PowerBook5,9",
+	@"Power Macintosh G5 (Late 2005)", @"PowerMac9,1",
+	@"Power Macintosh G4 (Gigabit Ethernet)", @"PowerMac3,3",
+	@"PowerBook G3", @"PowerBook1,1",
+	@"iBook G3 (Dual USB, Late 2001)", @"PowerBook4,1",
+	@"PowerBook G4 (DVI)", @"PowerBook3,4",
+	@"PowerBook G4 (12 inch 1.33GHz)", @"PowerBook6,4",
+	@"PowerBook G4 (17-inch 1.67GHz)", @"PowerBook5,7",
+	@"Mac Mini (Late 2005)", @"PowerMac10,2",
+	@"Xserve (Intel Xeon)", @"Xserve1,1",
+	@"Mac Pro (March 2009)", @"MacPro4,1",
+	@"Power Macintosh G4 (PCI Graphics)", @"PowerMac1,2",
+	@"PowerBook G4", @"PowerBook3,2",
+	@"MacBook Air (October 2010)", @"MacBookAir3,1",
+	@"PowerBook G4 (12 inch, DVI)", @"PowerBook6,2",
+	@"PowerBook G4 (17-inch 1.5GHz)", @"PowerBook5,5",
+	@"Power Macintosh G4 (Mirrored Drive Door)", @"PowerMac3,6",
+	@"iMac G3 (Summer 2000)", @"PowerMac2,2",
+	@"MacBook Pro (Core 2 Duo Feb 2008)", @"MacBookPro4,1",
+	@"iMac G4 (20-inch Flat Panel)", @"PowerMac6,3",
+	@"MacBook Pro Core 2 Duo (17-inch HD, Core 2 Duo)", @"MacBookPro3,2",
+	@"Mac Pro (four-core)", @"MacPro1,1",
+	@"iBook G3", @"PowerBook2,3",
+	@"MacBook Air (June 2009)", @"MacBookAir2,1",
+	@"Power Macintosh G4 (AGP Graphics)", @"PowerMac3,2",
+	@"PowerBook G4 (17-inch 1.33GHz)", @"PowerBook5,3",
+	@"MacBook (Core Duo)", @"MacBook1,1",
+	@"Power Macintosh G5", @"PowerMac7,3",
+	@"iMac G5 (iSight)", @"PowerMac12,1",
+	@"Xserve G4 (slot-loading, cluster node)", @"RackMac1,2",
+	@"MacBook Pro Core 2 Duo (15-inch LED, Core 2 Duo)", @"MacBookPro3,1",
+	@"iMac for Education (17-inch, Core Duo)", @"iMac4,2",
+	@"iBook G3", @"PowerBook2,1",
+	@"MacBook Pro Core 2 Duo (15-inch)", @"MacBookPro2,2",
+	@"iMac G4 (Flat Panel)", @"PowerMac4,2",
+	@"iMac (Core 2 Duo, 17 inch, Combo Drive)", @"iMac5,2",
+	@"PowerBook G4 (17 inch)", @"PowerBook5,1",
+	@"MacBook Air (January 2008)", @"MacBookAir1,1",
+	@"Power Macintosh G3 (Blue & White)", @"PowerMac1,1",
+	@"iBook G4 (Mid 2005)", @"PowerBook6,7",
+	@"Power Macintosh G5 (Late 2005)", @"PowerMac11,2",
+	@"Power Macintosh G4 (Quick Silver)", @"PowerMac3,5",
+	@"MacBook Pro Core 2 Duo (17-inch)", @"MacBookPro2,1",
+	@"iMac G3 (Slot-loading CD-ROM)", @"PowerMac2,1",
+	@"iBook G3 (16MB VRAM)", @"PowerBook4,2",
+	@"MacBook Pro Core Duo (17-inch)", @"MacBookPro1,2",
+	@"PowerBook G4 (1GHz / 867MHz)", @"PowerBook3,5",
+	@"Mac Pro (January 2008 4- or 8- core "Harpertown")", @"MacPro3,1",
+	@"iBook G4 (Early-Late 2004)", @"PowerBook6,5",
+	@"PowerBook G4 (Double layer SD, 15 inch)", @"PowerBook5,8",
+	@"iMac G4 (17-inch Flat Panel)", @"PowerMac4,5",
+	@"Power Macintosh G4 (AGP Graphics)", @"PowerMac3,1",
+	@"Mac Mini (Core Solo/Duo)", @"Macmini1,1",
+	@"Power Macintosh G5", @"PowerMac7,2",
+	@"MacBook Pro Core Duo (15-inch)", @"MacBookPro1,1",
+	@"PowerBook G4 (Gigabit Ethernet)", @"PowerBook3,3",
+	@"MacBook (Core 2 Duo Feb 2008)", @"MacBook4,1",
+	@"Developer Transition Kit", @"ADP2,1",
+	@"iBook G4", @"PowerBook6,3",
+	@"iMac G3 (Early/Summer 2001)", @"PowerMac4,1",
+	@"PowerBook G4 (15 inch 1.67GHz/1.5GHz)", @"PowerBook5,6",
+	@"Mac Mini G4", @"PowerMac10,1",
+	@"iMac G3 (Rev A-D)", @"iMac1,1",
+	@"iMac G5 (Ambient Light Sensor)", @"PowerMac8,2",
+	@"iMac (Core Duo)", @"iMac4,1",
+	@"iMac (Core 2 Duo, 17 or 20 inch, SuperDrive)", @"iMac5,1",
+	@"PowerBook G3 (FireWire)", @"PowerBook3,1",
+	@"Power Macintosh G4 Cube", @"PowerMac5,1",
+	@"iMac (Core 2 Duo, 24 inch, SuperDrive)", @"iMac6,1",
+	@"iBook G3", @"PowerBook2,4",
+	@"iMac (April 2008)", @"iMac8,1",
+	@"PowerBook G4 (12 inch)", @"PowerBook6,1",
+	@"PowerBook G4 (15 inch 1.5/1.33GHz)", @"PowerBook5,4",
+	@"MacBook (Core 2 Duo)", @"MacBook2,1",
+	@"Power Macintosh G4 (Digital Audio)", @"PowerMac3,4",
+	@"Mac Pro (August 2010)", @"MacPro5,1",
+	@"Xserve (January 2008 quad-core)", @"Xserve2,1",
+	@"iMac G4 (USB 2.0)", @"PowerMac6,1",
+	@"iBook G3 (FireWire)", @"PowerBook2,2",
+	@"eMac", @"PowerMac4,4",
+	@"PowerBook G4 (15 inch FW 800)", @"PowerBook5,2",
+	@"Xserve G5", @"RackMac3,1",
+	@"PowerBook G4 (12 inch 1.5GHz)", @"PowerBook6,8",
+	@"Mac Pro (eight-core)", @"MacPro2,1",
+	@"iMac G5", @"PowerMac8,1",
+	@"iBook G3 Opaque 16MB VRAM, 32MB VRAM, Early 2003)", @"PowerBook4,3",							   
 							   nil];
 	return translationDictionary;
 }
 
 + (NSString *)humanMachineType {
-	NSString *human=nil;
-	NSString *machineType;
+	NSString *human;
+	NSString *machineType = [self machineType];
+	NSDictionary *translation = [self translationDictionary];
 	
-	machineType=[self machineType];
+	human = [translation objectForKey:machineType];
 	
-	//return the corresponding entry in the NSDictionary
-	NSDictionary *translation=[self translationDictionary];
-	NSString *aKey;
-	//keys should be sorted to distinguish 'generic' from 'specific' names
-	NSEnumerator *e=[[[translation allKeys]
-					  sortedArrayUsingSelector:@selector(compare:)]
-					 objectEnumerator];
-	NSRange r;
-	while (aKey=[e nextObject]) {
-		r=[machineType rangeOfString:aKey];
-		if (r.location!=NSNotFound)
-			//continue searching : the first hit will be the generic name
-			human=[translation objectForKey:aKey];
+	if(human == nil) {
+		// TODO: could use string distance / matching here to do a 'best fit' match
+		human = machineType;
 	}
-	if (human)
-		return human;
-	else
-		return machineType;
+	
+	return human;
 }
 
 #pragma mark *** Getting Processor info ***
 
-+ (double) processorClockSpeedInGHZ {
++ (double) processorClockSpeedInGHz {
 	return (double)[self processorClockSpeedInMHz] / 1000.0
 }
 
@@ -196,9 +201,9 @@ static NSDictionary *translationDictionary=nil;
 	
 	if (error == 0) {
 		return value;
-	} else {
-		return 0;
 	}
+	
+	return 0;
 }
 
 #include <mach/mach.h>
@@ -211,8 +216,7 @@ static NSDictionary *translationDictionary=nil;
 //	and can be better understood with a look at
 //	file:///usr/include/mach/machine.h
 
-+ (BOOL) isPowerPC
-{
++ (BOOL) isPowerPC {
 	host_basic_info_data_t hostInfo;
 	mach_msg_type_number_t infoCount;
 	
@@ -220,8 +224,7 @@ static NSDictionary *translationDictionary=nil;
 	kern_return_t ret = host_info(mach_host_self(), HOST_BASIC_INFO,
 								  (host_info_t)&hostInfo, &infoCount);
 	
-	return ( (KERN_SUCCESS == ret) &&
-			(hostInfo.cpu_type == CPU_TYPE_POWERPC) );
+	return ( (KERN_SUCCESS == ret) && (hostInfo.cpu_type == CPU_TYPE_POWERPC) );
 }
 
 #pragma mark *** Machine information ***
@@ -229,8 +232,7 @@ static NSDictionary *translationDictionary=nil;
 //this used to be called 'Rendezvous name' (X.2), now just 'Computer name' (X.3)
 //see here for why: http://developer.apple.com/qa/qa2001/qa1228.html
 //this is the name set in the Sharing pref pane
-+ (NSString *)computerName
-{
++ (NSString *)computerName {
 	CFStringRef name;
 	NSString *computerName;
 	name=SCDynamicStoreCopyComputerName(NULL,NULL);
