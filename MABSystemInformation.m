@@ -17,42 +17,44 @@
 + (NSDictionary *)miniSystemProfile
 {
 	return [NSDictionary dictionaryWithObjectsAndKeys:
-			[self machineType],@"MachineType",
-			[self humanMachineType],@"HumanMachineType",
-			[self powerPCTypeString],@"ProcessorType",
-			[NSNumber numberWithLong:
-			 [self processorClockSpeed]],
-			@"ProcessorClockSpeed",
-			[NSNumber numberWithLong:
-			 [self processorClockSpeedInMHz]],
-			@"ProcessorClockSpeedInMHz",
-			[NSNumber numberWithInt:[self countProcessors]],
-			@"CountProcessors",
-			[self computerName],@"ComputerName",
-			[self computerSerialNumber],@"ComputerSerialNumber",
-			[self operatingSystemString],@"OperatingSystem",
-			[self systemVersionString],@"SystemVersion",		
-			nil];
+		[self machineType], @"MachineType",
+		[self humanMachineType], @"HumanMachineType",
+		[self powerPCTypeString], @"ProcessorType",
+		[NSNumber numberWithLong:[self processorClockSpeed]], @"ProcessorClockSpeed",
+		[NSNumber numberWithLong:[self processorClockSpeedInMHz]], @"ProcessorClockSpeedInMHz",
+		[NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
+		[self computerName],@"ComputerName",
+		[self computerSerialNumber],@"ComputerSerialNumber",
+		[self operatingSystemString],@"OperatingSystem",
+		[self systemVersionString],@"SystemVersion",		
+		nil];
 }
 
 
 #pragma mark *** Getting the Human Name for the Machine Type ***
 
-/* adapted from http://nilzero.com/cgi-bin/mt-comments.cgi?entry_id=1300 */
-/*see below 'humanMachineNameFromNilZeroCom()' for the original code */
-/*this code used a dictionary insted - see 'translationDictionary()' below */
+// adapted from http://nilzero.com/cgi-bin/mt-comments.cgi?entry_id=1300
+// see below 'humanMachineNameFromNilZeroCom()' for the original code
+// this code used a dictionary insted - see 'translationDictionary()' below 
 
-//non-human readable machine type/model
-+ (NSString *)machineType
-{
-	OSErr err;
-	char *machineName=NULL;    // This is really a Pascal-string with a length byte.
-	//gestaltUserVisibleMachineName = 'mnam'
-	err = Gestalt(gestaltUserVisibleMachineName, (long*) &machineName);
-	if( err== noErr )
-		return [NSString stringWithCString: machineName +1 length: machineName[0]];
-	else
-		return @"machineType: machine name cannot be determined";
+// non-human readable machine type/model
++ (NSString *)machineType {
+	error = sysctlbyname("hw.model", NULL, &length, NULL, 0);
+	if (error == 0) {
+		char *cpuModel = (char *)malloc(sizeof(char) * length);
+		if (cpuModel != NULL) {
+			error = sysctlbyname("hw.model", cpuModel, &length, NULL, 0);
+			
+			if (error == 0) {
+				free(cpuModel);
+				return [NSString stringWithUTF8String:cpuModel];
+			}
+			
+			NSLog(@"Error determining machine type");
+			free(cpuModel);
+			return @"";
+		}
+	}
 }
 
 //dictionary used to make the machine type human-readable
@@ -134,8 +136,7 @@ static NSDictionary *translationDictionary=nil;
 	return translationDictionary;
 }
 
-+ (NSString *)humanMachineType
-{
++ (NSString *)humanMachineType {
 	NSString *human=nil;
 	NSString *machineType;
 	
@@ -161,54 +162,43 @@ static NSDictionary *translationDictionary=nil;
 		return machineType;
 }
 
-//for some reason, this does not work
-//probably old stuff still around
-/*
-+ (NSString *)humanMachineTypeAlternate
-{
-	OSErr err;
-	long result;
-	Str255 name;
-	err=Gestalt('mach',&result); //gestaltMachineType = 'mach'
-	if (err==nil) {
-		GetIndString(name,kMachineNameStrID,(short)result);
-		return [NSString stringWithCString:name];
-	} else
-		return @"humanMachineTypeAlternate: machine name cannot be determined";
-}
-*/
-
 #pragma mark *** Getting Processor info ***
 
-+ (long)processorClockSpeed
-{
-	OSErr err;
-	long result;
-	err=Gestalt(gestaltProcClkSpeed,&result);
-	if (err!=nil)
-		return 0;
-	else
-		return result;
++ (double) processorClockSpeedInGHZ {
+	return (double)[self processorClockSpeedInMHz] / 1000.0
 }
 
-+ (long)processorClockSpeedInMHz
-{
-	return [self processorClockSpeed]/1000000;
++ (int) processorClockSpeedInMHz {
+	SInt32 gestaltInfo;
+	OSErr err = Gestalt(gestaltProcClkSpeedMHz, &gestaltInfo);
+	
+	if (err == noErr) {
+		return gestaltInfo;
+	}
+	
+	return 0;
+}
+
++ (int) ramAmount {
+	err = Gestalt(gestaltPhysicalRAMSizeInMegabytes, &gestaltInfo);
+	if (err == noErr) {
+		return gestaltInfo;
+	}
+	
+	return 0;
 }
 
 #include <mach/mach_host.h>
 #include <mach/host_info.h>
-+ (unsigned int)countProcessors
-{
-	host_basic_info_data_t hostInfo;
-	mach_msg_type_number_t infoCount;
+
++ (unsigned int)countProcessors {
+	error = sysctlbyname("hw.ncpu", &value, &length, NULL, 0);
 	
-	infoCount = HOST_BASIC_INFO_COUNT;
-	host_info(mach_host_self(), HOST_BASIC_INFO, 
-			  (host_info_t)&hostInfo, &infoCount);
-	
-	return (unsigned int)(hostInfo.max_cpus);
-	
+	if (error == 0) {
+		return value;
+	} else {
+		return 0;
+	}
 }
 
 #include <mach/mach.h>
@@ -232,67 +222,6 @@ static NSDictionary *translationDictionary=nil;
 	
 	return ( (KERN_SUCCESS == ret) &&
 			(hostInfo.cpu_type == CPU_TYPE_POWERPC) );
-}
-
-+ (BOOL) isG3
-{
-	host_basic_info_data_t hostInfo;
-	mach_msg_type_number_t infoCount;
-	
-	infoCount = HOST_BASIC_INFO_COUNT;
-	kern_return_t ret = host_info(mach_host_self(), HOST_BASIC_INFO,
-								  (host_info_t)&hostInfo, &infoCount);
-	
-	return ( (KERN_SUCCESS == ret) &&
-			(hostInfo.cpu_type == CPU_TYPE_POWERPC) &&
-			(hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_750) );
-}
-
-+ (BOOL) isG4
-{
-	host_basic_info_data_t hostInfo;
-	mach_msg_type_number_t infoCount;
-	
-	infoCount = HOST_BASIC_INFO_COUNT;
-	kern_return_t ret = host_info(mach_host_self(), HOST_BASIC_INFO,
-								  (host_info_t)&hostInfo, &infoCount);
-	
-	return ( (KERN_SUCCESS == ret) &&
-			(hostInfo.cpu_type == CPU_TYPE_POWERPC) &&
-			(hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_7400 ||
-			 hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_7450));
-}
-
-#ifndef CPU_SUBTYPE_POWERPC_970
-#define CPU_SUBTYPE_POWERPC_970 ((cpu_subtype_t) 100)
-#endif
-+ (BOOL) isG5
-{
-	host_basic_info_data_t hostInfo;
-	mach_msg_type_number_t infoCount;
-	
-	infoCount = HOST_BASIC_INFO_COUNT;
-	kern_return_t ret = host_info(mach_host_self(), HOST_BASIC_INFO,
-								  (host_info_t)&hostInfo, &infoCount);
-	
-	return ( (KERN_SUCCESS == ret) &&
-			(hostInfo.cpu_type == CPU_TYPE_POWERPC) &&
-			(hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_970));
-}	
-
-+ (NSString *)powerPCTypeString
-{
-	if ([self isG3])
-		return @"G3";
-	else if ([self isG4])
-		return @"G4";
-	else if ([self isG5])
-		return @"G5";
-	else if ([self isPowerPC])
-		return @"PowerPC pre-G3";
-	else
-		return @"Non-PowerPC";
-	
 }
 
 #pragma mark *** Machine information ***
