@@ -1,9 +1,8 @@
 //
 //  PHSplitView.h
-//  PyHelp
 //
 //  Created by Michael Bianco on 4/11/07.
-//  Copyright 2007 Prosit Software. All rights reserved.
+// 		<mabblog.com>
 //
 
 #import <Cocoa/Cocoa.h>
