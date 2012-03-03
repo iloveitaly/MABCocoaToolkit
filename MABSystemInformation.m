@@ -2,14 +2,15 @@
 //  MABSystemInformation.m
 //
 //  Created by Michael Bianco on 6/15/09.
+// 		<mabblog.com>
 //
 
 // from: http://www.cocoadev.com/index.pl?HowToGetHardwareAndNetworkInfo
 
 #import "MABSystemInformation.h"
 
-#import <Carbon/Carbon.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <sys/sysctl.h>
 
 @implementation MABSystemInformation
 
@@ -17,7 +18,7 @@
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 		[self machineType], @"MachineType",
 		[self humanMachineType], @"HumanMachineType",
-		[self powerPCTypeString], @"ProcessorType",
+		// [self powerPCTypeString], @"ProcessorType",
 		[NSNumber numberWithDouble:[self processorClockSpeedInGHz]], @"ProcessorClockSpeedInGHz",
 		[NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
 		[self computerName], @"ComputerName",
@@ -37,6 +38,10 @@
 
 // non-human readable machine type/model
 + (NSString *)machineType {
+	int error = 0;
+	int value = 0;
+	size_t length = sizeof(value);
+	
 	error = sysctlbyname("hw.model", NULL, &length, NULL, 0);
 	if (error == 0) {
 		char *cpuModel = (char *)malloc(sizeof(char) * length);
@@ -109,7 +114,7 @@ static NSDictionary *translationDictionary = nil;
 	@"iBook G3 (16MB VRAM)", @"PowerBook4,2",
 	@"MacBook Pro Core Duo (17-inch)", @"MacBookPro1,2",
 	@"PowerBook G4 (1GHz / 867MHz)", @"PowerBook3,5",
-	@"Mac Pro (January 2008 4- or 8- core "Harpertown")", @"MacPro3,1",
+	@"Mac Pro (January 2008 4- or 8- core Harpertown)", @"MacPro3,1",
 	@"iBook G4 (Early-Late 2004)", @"PowerBook6,5",
 	@"PowerBook G4 (Double layer SD, 15 inch)", @"PowerBook5,8",
 	@"iMac G4 (17-inch Flat Panel)", @"PowerMac4,5",
@@ -170,7 +175,7 @@ static NSDictionary *translationDictionary = nil;
 #pragma mark *** Getting Processor info ***
 
 + (double) processorClockSpeedInGHz {
-	return (double)[self processorClockSpeedInMHz] / 1000.0
+	return (double)[self processorClockSpeedInMHz] / 1000.0;
 }
 
 + (int) processorClockSpeedInMHz {
@@ -185,7 +190,8 @@ static NSDictionary *translationDictionary = nil;
 }
 
 + (int) ramAmount {
-	err = Gestalt(gestaltPhysicalRAMSizeInMegabytes, &gestaltInfo);
+	SInt32 gestaltInfo;
+	OSErr err = Gestalt(gestaltPhysicalRAMSizeInMegabytes, &gestaltInfo);
 	if (err == noErr) {
 		return gestaltInfo;
 	}
@@ -197,6 +203,10 @@ static NSDictionary *translationDictionary = nil;
 #include <mach/host_info.h>
 
 + (unsigned int)countProcessors {
+	int error = 0;
+	int value = 0;
+	size_t length = sizeof(value);
+	
 	error = sysctlbyname("hw.ncpu", &value, &length, NULL, 0);
 	
 	if (error == 0) {

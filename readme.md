@@ -7,6 +7,8 @@ Collection of classes and peices of code neatly organized for easy reuse:
 * MABMacros - some helpful macros for managing preferences, checking for empty values, and other misc tasks
 * NSString+Levenshtein - implementation of the Levenshtein string distance algorithm in objc
 * NSString+SearchAdditions - simple contains (case and non-case sensitive) boolean functions
+* MABSplitView - NSSplitView with divider image
+* MABSystemInformation - A combination of the old CPSystemInformation class and Sparkle's system profiler. Self-contained and allows for the retrieval of some additional information that Sparkle does not allow for.
 
 #Authors
 Most of the code in this bundle is not my own. Most of the original concepts were developed by others and I modified them a bit or brought them up to compatability with the latest OS. Proper attribution is given when I was able to find the original authors information.
