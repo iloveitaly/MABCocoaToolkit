@@ -17,23 +17,12 @@
 #import <Cocoa/Cocoa.h>
 
 @interface MABSupportFolder : NSObject {
-	NSString *_supportFolder, *_downloadFolder, *_logFolder;
+	NSString *_supportFolder;
 	NSFileManager *_fileManager;
 }
 
-+(MABSupportFolder *) sharedController;
-
-//-----------------------
-//	Action Methods
-//-----------------------
--(void) createSupportFolder;
-
-//-----------------------
-//	Getter & Setter
-//-----------------------
--(BOOL) isSupportFolderCreated;
-
++ (MABSupportFolder *) sharedController;
+- (void) createSupportFolder;
 - (NSString *) supportFolder;
-- (NSString *) downloadFolder;
-- (NSString *) logFolder;
+- (NSString *) supportSubFolder:(NSString *) sub;
 @end

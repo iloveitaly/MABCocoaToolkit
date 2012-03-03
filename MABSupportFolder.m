@@ -27,10 +27,12 @@
  */
 
 #import "MABSupportFolder.h"
+#import "MABMacros.h"
 
 static MABSupportFolder *_sharedController;
 
 @implementation MABSupportFolder
+
 +(MABSupportFolder *) sharedController {
 	extern MABSupportFolder *_sharedController;
 	if(!_sharedController) [self new];
@@ -46,8 +48,6 @@ static MABSupportFolder *_sharedController;
 		//create the application support folder path
 		_supportFolder = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
 		_supportFolder = [[_supportFolder stringByAppendingPathComponent:[[NSBundle mainBundle]  objectForInfoDictionaryKey:@"CFBundleName"]] retain];
-		_downloadFolder = [[_supportFolder stringByAppendingPathComponent:@"downloads"] retain];
-		_logFolder = [[_supportFolder stringByAppendingPathComponent:@"logs"] retain];
 		_fileManager = [[NSFileManager defaultManager] retain];
 	}
 	
@@ -73,4 +73,24 @@ static MABSupportFolder *_sharedController;
 	[self createSupportFolder];
 	return _supportFolder;	
 }
+
+- (NSString *) supportSubFolder:(NSString *)sub {
+	[self createSupportFolder];
+	
+	if(!isEmpty(sub)) {
+		NSString *subFolder = [_supportFolder stringByAppendingPathComponent:sub];
+		
+		if(![_fileManager fileExistsAtPath:subFolder]) {
+			if(![_fileManager createDirectoryAtPath:subFolder
+										 attributes:nil]) {
+				NSLog(@"Error creating app support sub folder");	
+			}		
+		}
+		
+		return subFolder;
+	}
+	
+	return nil;
+}
+
 @end
