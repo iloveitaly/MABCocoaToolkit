@@ -29,7 +29,7 @@
 #import "MABSupportFolder.h"
 #import "MABMacros.h"
 
-static MABSupportFolder *_sharedController;
+static MABSupportFolder *_sharedController = nil;
 
 @implementation MABSupportFolder
 
