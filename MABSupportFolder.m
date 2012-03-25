@@ -27,7 +27,6 @@
  */
 
 #import "MABSupportFolder.h"
-#import "MABMacros.h"
 
 static MABSupportFolder *_sharedController = nil;
 
@@ -76,8 +75,8 @@ static MABSupportFolder *_sharedController = nil;
 
 - (NSString *) supportSubFolder:(NSString *)sub {
 	[self createSupportFolder];
-	
-	if(!isEmpty(sub)) {
+
+	if(sub != nil && [sub length] > 1) {
 		NSString *subFolder = [_supportFolder stringByAppendingPathComponent:sub];
 		
 		if(![_fileManager fileExistsAtPath:subFolder]) {
