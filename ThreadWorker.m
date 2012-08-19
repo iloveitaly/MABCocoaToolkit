@@ -138,7 +138,6 @@
     _target            = nil;
     _argument          = nil;
     _callingConnection = nil;
-    _conn2             = nil;
     _port1             = nil;
     _port2             = nil;
     _cancelled         = nil;
@@ -190,7 +189,6 @@
     // Set up connections on new thread
     _port1 = [callingPortArray objectAtIndex:0];
     _port2 = [callingPortArray objectAtIndex:1];
-    _conn2 = [callingPortArray objectAtIndex:2];
     _callingConnection = [NSConnection connectionWithReceivePort:_port1 sendPort:_port2];
 
     // Prime the run loop
@@ -244,7 +242,6 @@
 
     // Clean up thread maintenance]
     [_callingConnection invalidate];
-    [_conn2 invalidate];
     [_port1 invalidate];
     [_port2 invalidate];
     

@@ -104,7 +104,6 @@ back to the main, i.e. calling, thread from the secondary thread.
    NSConnection    *_callingConnection; // Connection used to safely communicate between threads
    NSPort          *_port1;
    NSPort          *_port2;
-   NSConnection    *_conn2;
    NSConditionLock *_cancelled;
    BOOL		        _endRunLoop;
 }
