@@ -38,9 +38,6 @@
 
 @end // PrivateAPI
 
-
-
-
 @implementation ThreadWorker
 
 
@@ -89,9 +86,6 @@
     return tw;
 }   // end workOn
 
-
-
-
 /*!
  * Private init method that establishes instance variables.
  */
@@ -128,12 +122,6 @@
     [_argument          release];
     [_cancelled         release];
 
-    // Releasing these makes the program crash...
-    //[_callingConnection release];
-    //[_conn2 release];
-    //[_port1 release];
-    //[_port2 release];
-    
     // Clear instance variables - Probably unnecessary.
     _target            = nil;
     _argument          = nil;
@@ -143,10 +131,7 @@
     _cancelled         = nil;
 
     [super dealloc];
-}   // end dealloc
-
-
-
+}
 
 /*!
  * Marks thread as cancelled but cannot actually cause thread to quit.
@@ -158,10 +143,6 @@
         [_cancelled unlockWithCondition:YES];
 }	// end markAsCancelled
 
-
-
-
-
 /*!
  * Indicates whether or not thread is cancelled.
  */
@@ -169,10 +150,6 @@
 {
     return [_cancelled condition];
 }	// end cancelled
-
-
-
-
 
 /*!
  * Private method that is called in a detached thread.
@@ -200,11 +177,7 @@
             userInfo:nil 
             repeats:NO] 
         forMode:NSDefaultRunLoopMode];
-    //[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-    //                         beforeDate:[NSDate distantFuture]];
-    
-    //[self runPrimaryTask:nil];
-    
+
     // Run one iteration of the run loop
     _endRunLoop = NO;
     BOOL isRunning;
@@ -246,6 +219,6 @@
     [_port2 invalidate];
     
     _endRunLoop = YES;
-}   // end runPrimaryTask
+}
 @end
 
