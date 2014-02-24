@@ -18,11 +18,6 @@
 + (long)processorClockSpeed;
 + (long)processorClockSpeedInMHz;
 + (unsigned int)countProcessors;
-+ (BOOL) isPowerPC;
-+ (BOOL) isG3;
-+ (BOOL) isG4;
-+ (BOOL) isG5;
-+ (NSString *)powerPCTypeString;
 
 + (NSString *)computerName;
 + (NSString *)computerSerialNumber;

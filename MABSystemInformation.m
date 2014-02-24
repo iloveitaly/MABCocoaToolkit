@@ -10,7 +10,7 @@
 #import "MABSystemInformation.h"
 
 #import <SystemConfiguration/SystemConfiguration.h>
-#import <sys/sysctl.h>
+#import <IOKit/IOKitLib.h>
 
 @implementation MABSystemInformation
 
@@ -18,7 +18,6 @@
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 		[self machineType], @"MachineType",
 		[self humanMachineType], @"HumanMachineType",
-		// [self powerPCTypeString], @"ProcessorType",
 		[NSNumber numberWithDouble:[self processorClockSpeedInGHz]], @"ProcessorClockSpeedInGHz",
 		[NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
 		[self computerName], @"ComputerName",
@@ -216,26 +215,8 @@ static NSDictionary *translationDictionary = nil;
 	return 0;
 }
 
-#include <mach/mach.h>
-#include <mach/machine.h>
-
-
-// the following methods were more or less copied from
-//	http://developer.apple.com/technotes/tn/tn2086.html
-//	http://www.cocoadev.com/index.pl?GettingTheProcessor
-//	and can be better understood with a look at
-//	file:///usr/include/mach/machine.h
-
-+ (BOOL) isPowerPC {
-	host_basic_info_data_t hostInfo;
-	mach_msg_type_number_t infoCount;
-	
-	infoCount = HOST_BASIC_INFO_COUNT;
-	kern_return_t ret = host_info(mach_host_self(), HOST_BASIC_INFO,
-								  (host_info_t)&hostInfo, &infoCount);
-	
-	return ( (KERN_SUCCESS == ret) && (hostInfo.cpu_type == CPU_TYPE_POWERPC) );
-}
+// #include <mach/mach.h>
+// #include <mach/machine.h>
 
 #pragma mark *** Machine information ***
 
@@ -254,77 +235,12 @@ static NSDictionary *translationDictionary = nil;
 /* copied from http://cocoa.mamasam.com/COCOADEV/2003/07/1/68334.php */
 /* and modified by http://nilzero.com/cgi-bin/mt-comments.cgi?entry_id=1300 */
 /* and by http://cocoa.mamasam.com/COCOADEV/2003/07/1/68337.php/ */
-+ (NSString *)computerSerialNumber
-{
-	NSString         *result = @"";
-	mach_port_t       masterPort;
-	kern_return_t      kr = noErr;
-	io_registry_entry_t  entry;    
-	CFDataRef         propData;
-	CFTypeRef         prop;
-	CFTypeID         propID=NULL;
-	UInt8           *data;
-	unsigned int        i, bufSize;
-	char            *s, *t;
-	char            firstPart[64], secondPart[64];
-	
-	kr = IOMasterPort(MACH_PORT_NULL, &masterPort);        
-	if (kr == noErr) {
-		entry = IORegistryGetRootEntry(masterPort);
-		if (entry != MACH_PORT_NULL) {
-			prop = IORegistryEntrySearchCFProperty(entry,
-												   kIODeviceTreePlane,
-												   CFSTR("serial-number"),
-												   nil, kIORegistryIterateRecursively);
-			if (prop == nil) {
-				result = @"null";
-			} else {
-				propID = CFGetTypeID(prop);
-			}
-			if (propID == CFDataGetTypeID()) {
-				propData = (CFDataRef)prop;
-				bufSize = CFDataGetLength(propData);
-				if (bufSize > 0) {
-					data = CFDataGetBytePtr(propData);
-					if (data) {
-						i = 0;
-						s = data;
-						t = firstPart;
-						while (i < bufSize) {
-							i++;
-							if (*s != '\0') {
-								*t++ = *s++;
-							} else {
-								break;
-							}
-						}
-						*t = '\0';
-						
-						while ((i < bufSize) && (*s == '\0')) {
-							i++;
-							s++;
-						}
-						
-						t = secondPart;
-						while (i < bufSize) {
-							i++;
-							if (*s != '\0') {
-								*t++ = *s++;
-							} else {
-								break;
-							}
-						}
-						*t = '\0';
-						result =
-						[NSString stringWithFormat:
-						 @"%s%s",secondPart,firstPart];
-					}
-				}
-			}
-		}
-		mach_port_deallocate(mach_task_self(), masterPort);
-	}
-	return(result);
+
+// found cleaner way to get this information:
+// http://stackoverflow.com/questions/11613987/how-to-get-serial-number-processor-tray-with-cocoa
+
++ (NSString *)computerSerialNumber {
+	return IORegistryEntryCreateCFProperty(IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/"), CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
 }
 
 #pragma mark *** System version ***
