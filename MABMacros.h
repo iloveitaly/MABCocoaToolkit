@@ -10,13 +10,3 @@
 
 /* key, observer, object */
 #define OB_OBSERVE_VALUE(x, y, z) [(z) addObserver:y forKeyPath:x options:NSKeyValueObservingOptionOld context:nil];
-
-#ifdef __OBJC__
-static inline BOOL isEmpty(id thing) {
-    return thing == nil
-	|| ([thing respondsToSelector:@selector(length)]
-        && [(NSData *)thing length] == 0)
-	|| ([thing respondsToSelector:@selector(count)]
-        && [(NSArray *)thing count] == 0);
-}
-#endif
