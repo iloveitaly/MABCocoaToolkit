@@ -8,14 +8,11 @@
 
 @interface MABSystemInformation : NSObject {}
 
-//all the info at once!
 + (NSDictionary *)miniSystemProfile;
 
 + (NSString *)machineType;
 + (NSString *)humanMachineType;
-+ (NSString *)humanMachineTypeAlternate;
 
-+ (long)processorClockSpeed;
 + (long)processorClockSpeedInMHz;
 + (unsigned int)countProcessors;
 

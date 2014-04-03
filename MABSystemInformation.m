@@ -12,20 +12,26 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <IOKit/IOKitLib.h>
 
+// for sysctlbyname
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 @implementation MABSystemInformation
 
 + (NSDictionary *)miniSystemProfile {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-		[self machineType], @"MachineType",
-		[self humanMachineType], @"HumanMachineType",
-		[NSNumber numberWithDouble:[self processorClockSpeedInGHz]], @"ProcessorClockSpeedInGHz",
-		[NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
+	NSDictionary *test = [NSDictionary dictionaryWithObjectsAndKeys:
+		// [NSNumber numberWithDouble:[self processorClockSpeedInGHz]], @"ProcessorClockSpeedInGHz",
+		// [NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
 		[self computerName], @"ComputerName",
 		[self computerSerialNumber], @"ComputerSerialNumber",
 		[self operatingSystemString], @"OperatingSystem",
 		[self systemVersionString], @"SystemVersion",
-		[NSNumber numberWithInt:[self ramAmount]], @"RamAmount",	
+		// [NSNumber numberWithInt:[self ramAmount]], @"RamAmount",	
+		[self machineType], @"MachineType",
+		[self humanMachineType], @"HumanMachineType",
 		nil];
+	NSLog(@"TEST %@", test);
+	return test;
 }
 
 
@@ -36,27 +42,35 @@
 // this code used a dictionary insted - see 'translationDictionary()' below 
 
 // non-human readable machine type/model
+
+// http://stackoverflow.com/questions/7377702/getting-mac-model-number-on-cocoa/7377964#7377964
+// via CLI: `sysctl hw.model`
+
 + (NSString *)machineType {
 	int error = 0;
 	int value = 0;
-	size_t length = sizeof(value);
-	
+
+	size_t length = 0;
 	error = sysctlbyname("hw.model", NULL, &length, NULL, 0);
+
 	if (error == 0) {
-		char *cpuModel = (char *)malloc(sizeof(char) * length);
-		if (cpuModel != NULL) {
-			error = sysctlbyname("hw.model", cpuModel, &length, NULL, 0);
+		char *model = (char *) malloc(sizeof(char) * length);
+
+		if (model != NULL) {
+			error = sysctlbyname("hw.model", model, &length, NULL, 0);
 			
 			if (error == 0) {
-				free(cpuModel);
-				return [NSString stringWithUTF8String:cpuModel];
+				NSString *modelName = [NSString stringWithUTF8String:model];
+				free(model);
+				return modelName;
 			}
 			
 			NSLog(@"Error determining machine type");
-			free(cpuModel);
-			return @"";
+			free(model);
 		}
 	}
+
+	return @"";
 }
 
 // dictionary used to make the machine type human-readable
@@ -151,8 +165,12 @@ static NSDictionary *translationDictionary = nil;
 	@"PowerBook G4 (12 inch 1.5GHz)", @"PowerBook6,8",
 	@"Mac Pro (eight-core)", @"MacPro2,1",
 	@"iMac G5", @"PowerMac8,1",
-	@"iBook G3 Opaque 16MB VRAM, 32MB VRAM, Early 2003)", @"PowerBook4,3",							   
-							   nil];
+	@"iBook G3 Opaque 16MB VRAM, 32MB VRAM, Early 2003)", @"PowerBook4,3",
+	
+	// custom; Sparkle has stopped updating their models
+	@"iMac 2011", @"iMac12,1",
+	nil];
+
 	return translationDictionary;
 }
 
