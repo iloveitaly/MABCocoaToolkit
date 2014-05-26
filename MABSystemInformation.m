@@ -19,7 +19,7 @@
 @implementation MABSystemInformation
 
 + (NSDictionary *)miniSystemProfile {
-	NSDictionary *test = [NSDictionary dictionaryWithObjectsAndKeys:
+	return [NSDictionary dictionaryWithObjectsAndKeys:
 		// [NSNumber numberWithDouble:[self processorClockSpeedInGHz]], @"ProcessorClockSpeedInGHz",
 		// [NSNumber numberWithInt:[self countProcessors]], @"CountProcessors",
 		[self computerName], @"ComputerName",
@@ -30,8 +30,6 @@
 		[self machineType], @"MachineType",
 		[self humanMachineType], @"HumanMachineType",
 		nil];
-	NSLog(@"TEST %@", test);
-	return test;
 }
 
 
