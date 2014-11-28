@@ -16,6 +16,9 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
+#include <mach/mach_host.h>
+#include <mach/host_info.h>
+
 @implementation MABSystemInformation
 
 + (NSDictionary *)miniSystemProfile {
@@ -214,9 +217,6 @@ static NSDictionary *translationDictionary = nil;
 	return 0;
 }
 
-#include <mach/mach_host.h>
-#include <mach/host_info.h>
-
 + (unsigned int)countProcessors {
 	int error = 0;
 	int value = 0;
@@ -230,9 +230,6 @@ static NSDictionary *translationDictionary = nil;
 	
 	return 0;
 }
-
-// #include <mach/mach.h>
-// #include <mach/machine.h>
 
 #pragma mark *** Machine information ***
 
